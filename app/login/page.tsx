@@ -83,15 +83,10 @@ export default function LoginPage() {
           </button>
 
           {tab === 'login' && (
-            <>
-              <p style={{ fontFamily: 'var(--mono)', fontSize: '.72rem', color: 'var(--admin)', marginTop: '1rem', textAlign: 'center', padding: '.6rem', background: 'rgba(26,110,58,0.08)', border: '1px solid rgba(26,110,58,0.25)', borderRadius: 2 }}>
-                ✨ <strong>AltroBoard 계정 그대로 사용 가능</strong><br />
-                같은 이메일·비밀번호로 바로 로그인하세요 (첫 로그인 시 100코인 보너스)
-              </p>
-              <p style={{ fontFamily: 'var(--mono)', fontSize: '.68rem', color: 'var(--muted)', marginTop: '.65rem', textAlign: 'center' }}>
-                관리자: <code>altrofast11x2@email.com</code> / <code>altrofast11x2@</code>
-              </p>
-            </>
+            <p style={{ fontFamily: 'var(--mono)', fontSize: '.72rem', color: 'var(--admin)', marginTop: '1rem', textAlign: 'center', padding: '.6rem', background: 'rgba(26,110,58,0.08)', border: '1px solid rgba(26,110,58,0.25)', borderRadius: 2 }}>
+              ✨ <strong>AltroBoard 계정 그대로 사용 가능</strong><br />
+              같은 이메일·비밀번호로 바로 로그인 (첫 로그인 시 100코인 보너스)
+            </p>
           )}
         </div>
       </div>
