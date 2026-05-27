@@ -20,7 +20,7 @@ export default function LoginPage() {
     try {
       if (tab === 'login') {
         const u = await loginUser(email, pw);
-        if (!u) { setErr('이메일 또는 비밀번호가 일치하지 않습니다'); setBusy(false); return; }
+        if (!u) { setErr('이메일 또는 비밀번호가 일치하지 않습니다. AltroBoard 계정이라면 같은 비밀번호로 시도해주세요.'); setBusy(false); return; }
         localStorage.setItem('altroshop_user', JSON.stringify(u));
         window.dispatchEvent(new Event('altroshop:refresh'));
         router.push('/');
@@ -35,7 +35,12 @@ export default function LoginPage() {
         router.push('/');
       }
     } catch (e: any) {
-      setErr(e?.message || '오류가 발생했습니다');
+      const msg = e?.message || String(e);
+      if (/permission|denied/i.test(msg)) {
+        setErr('Firebase 권한 오류. 관리자에게 알려주세요 (database rules 게시 필요)');
+      } else {
+        setErr(msg || '오류가 발생했습니다');
+      }
       setBusy(false);
     }
   };
