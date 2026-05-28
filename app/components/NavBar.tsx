@@ -214,10 +214,6 @@ export default function NavBar() {
                   <span className="sb-label">좋아요한 상품</span>
                 </Link>
               )}
-              <button className="sb-row sb-sub sb-btn" onClick={toggleTheme}>
-                <span className="sb-icon"><I.Moon width={20} height={20}/></span>
-                <span className="sb-label">모드 전환</span>
-              </button>
               <a href="https://altroboard.vercel.app/admin/reports" target="_blank" rel="noopener noreferrer" className="sb-row sb-sub">
                 <span className="sb-icon"><I.Flag width={20} height={20}/></span>
                 <span className="sb-label">문제 신고</span>
