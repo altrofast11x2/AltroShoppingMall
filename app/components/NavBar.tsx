@@ -214,6 +214,18 @@ export default function NavBar() {
                   <span className="sb-label">좋아요한 상품</span>
                 </Link>
               )}
+              {user && (
+                <Link href="/profile" className={`sb-row sb-sub ${pathname === '/profile' ? 'active' : ''}`}>
+                  <span className="sb-icon"><I.Activity width={20} height={20}/></span>
+                  <span className="sb-label">내 프로필</span>
+                </Link>
+              )}
+              {user && (
+                <Link href="/coin-request" className={`sb-row sb-sub ${pathname === '/coin-request' ? 'active' : ''}`}>
+                  <span className="sb-icon" style={{color:'#ffd166'}}><I.Coin width={20} height={20}/></span>
+                  <span className="sb-label">코인 충전 요청</span>
+                </Link>
+              )}
               <a href="https://altroboard.vercel.app/admin/reports" target="_blank" rel="noopener noreferrer" className="sb-row sb-sub">
                 <span className="sb-icon"><I.Flag width={20} height={20}/></span>
                 <span className="sb-label">문제 신고</span>
@@ -260,13 +272,13 @@ export default function NavBar() {
         <div className="sb-bottom">
           {user ? (
             <>
-              <div className="sb-row sb-profile">
+              <Link href="/profile" className={`sb-row ${pathname === '/profile' ? 'active' : ''}`} title="내 프로필">
                 <span className="sb-icon">
                   <span className="sb-avatar-text">{(user.name || '?')[0].toUpperCase()}</span>
                   {user.isAdmin && <span className="sb-role admin"><I.Crown width={9} height={9}/></span>}
                 </span>
                 <span className="sb-label">{user.name}</span>
-              </div>
+              </Link>
               <button className="sb-row sb-btn" onClick={logout}>
                 <span className="sb-icon"><I.Logout width={22} height={22}/></span>
                 <span className="sb-label">로그아웃</span>

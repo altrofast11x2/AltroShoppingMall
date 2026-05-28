@@ -1,8 +1,9 @@
 'use client';
 import { useState, useEffect, use } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import {
-  getProduct, listComments, addComment, toggleLike, addToCart,
+  getProduct, listComments, addComment, toggleLike, addToCart, deleteProduct,
 } from '@/lib/shop';
 
 export default function ProductDetail({ params }: { params: Promise<{ id: string }> }) {
@@ -55,6 +56,13 @@ export default function ProductDetail({ params }: { params: Promise<{ id: string
     alert('장바구니에 담았습니다!');
   };
 
+  const onDeleteProduct = async () => {
+    if (!confirm(`"${product.name}" 을(를) 삭제하시겠습니까?\n(댓글/좋아요도 함께 삭제됩니다)`)) return;
+    await deleteProduct(id);
+    alert('삭제되었습니다.');
+    router.push('/profile');
+  };
+
   if (loading) return <main className="page"><div className="container"><div className="empty">불러오는 중...</div></div></main>;
   if (!product) return <main className="page"><div className="container"><div className="empty">상품을 찾을 수 없습니다.</div></div></main>;
 
@@ -82,10 +90,23 @@ export default function ProductDetail({ params }: { params: Promise<{ id: string
             </div>
             <div className="detail-desc">{product.desc}</div>
             <div className="detail-actions">
-              <button className="btn btn-primary" onClick={onAddToCart}>🛒 장바구니 담기</button>
-              <button className={`like-btn ${liked ? 'on' : ''}`} onClick={onToggleLike}>
-                {liked ? '♥' : '♡'} <span>{product.likeCount}</span>
-              </button>
+              {user && user.id === product.sellerId ? (
+                <>
+                  <span className="badge badge-green" style={{padding:'.35rem .6rem',fontSize:'.72rem'}}>내가 등록한 상품</span>
+                  <Link href={`/product/${product.id}/edit`} className="btn btn-primary">✎ 수정</Link>
+                  <button className="btn btn-danger" onClick={onDeleteProduct}>🗑 삭제</button>
+                  <span className="like-btn" style={{opacity:.5,cursor:'default'}} title="본인 상품">
+                    ♡ <span>{product.likeCount}</span>
+                  </span>
+                </>
+              ) : (
+                <>
+                  <button className="btn btn-primary" onClick={onAddToCart}>🛒 장바구니 담기</button>
+                  <button className={`like-btn ${liked ? 'on' : ''}`} onClick={onToggleLike}>
+                    {liked ? '♥' : '♡'} <span>{product.likeCount}</span>
+                  </button>
+                </>
+              )}
             </div>
           </div>
         </div>

@@ -55,6 +55,11 @@
       ".read": true,
       ".write": true,
       ".indexOn": ["date", "userId"]
+    },
+    "shop_coin_requests": {
+      ".read": true,
+      ".write": true,
+      ".indexOn": ["createdAt", "userId", "status"]
     }
   }
 }
