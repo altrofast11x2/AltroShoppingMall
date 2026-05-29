@@ -125,9 +125,9 @@ export default function CoinRequestPage() {
 
         <div className="bj-notice">
           <strong>안내</strong><br />
-          · 10,000코인 = 10,000원 (1:1 환산)<br />
-          · 관리자 확인 후 직접 충전 처리됩니다<br />
-          · 입금/송금 확인용 메시지를 자세히 적어주세요
+          10,000코인 = 10,000원 (1:1 환산)<br />
+          관리자 확인 후 직접 충전 처리됩니다<br />
+          입금/송금 확인용 메시지를 자세히 적어주세요
         </div>
       </div>
 

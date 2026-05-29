@@ -39,11 +39,11 @@ export default function AdminPage() {
   const onAddCoins = async (uid: string, name: string) => {
     const raw = addAmounts[uid] || '';
     const amount = parseInt(raw, 10);
-    if (!amount || amount < 1) { setMsg('❌ 1 이상의 숫자를 입력해주세요'); return; }
+    if (!amount || amount < 1) { setMsg('1 이상의 숫자를 입력해주세요'); return; }
     const cur = await getUser(uid);
     if (!cur) return;
     await updateUserCoins(uid, (cur.coins || 0) + amount);
-    setMsg(`✅ ${name}님에게 ${amount.toLocaleString()}원 충전 (잔액: ${(cur.coins + amount).toLocaleString()}원)`);
+    setMsg(`${name}님에게 ${amount.toLocaleString()}원 충전 (잔액: ${(cur.coins + amount).toLocaleString()}원)`);
     setAddAmounts({ ...addAmounts, [uid]: '' });
     await refresh();
   };
@@ -51,10 +51,10 @@ export default function AdminPage() {
   const onSetCoins = async (uid: string, name: string) => {
     const raw = addAmounts[uid] || '';
     const amount = parseInt(raw, 10);
-    if (isNaN(amount) || amount < 0) { setMsg('❌ 0 이상의 숫자를 입력해주세요'); return; }
+    if (isNaN(amount) || amount < 0) { setMsg('0 이상의 숫자를 입력해주세요'); return; }
     if (!confirm(`${name}님의 코인을 ${amount.toLocaleString()}원으로 덮어쓸까요?`)) return;
     await updateUserCoins(uid, amount);
-    setMsg(`✅ ${name}님 코인 ${amount.toLocaleString()}원으로 설정 완료`);
+    setMsg(`${name}님 코인 ${amount.toLocaleString()}원으로 설정 완료`);
     setAddAmounts({ ...addAmounts, [uid]: '' });
     await refresh();
   };
@@ -63,19 +63,19 @@ export default function AdminPage() {
     const reply = adminReplies[reqId] || '';
     if (!confirm(`${userName}님에게 ${amount.toLocaleString()}원 지급?`)) return;
     const r = await approveCoinRequest(reqId, reply);
-    if ((r as any).error) { setMsg('❌ ' + (r as any).error); return; }
-    setMsg(`✅ ${userName}님께 ${amount.toLocaleString()}원 지급 완료`);
+    if ((r as any).error) { setMsg('' + (r as any).error); return; }
+    setMsg(`${userName}님께 ${amount.toLocaleString()}원 지급 완료`);
     setAdminReplies({ ...adminReplies, [reqId]: '' });
     await refresh();
   };
 
   const onRejectRequest = async (reqId: string, userName: string) => {
     const reply = adminReplies[reqId] || '';
-    if (!reply.trim()) { setMsg('❌ 거절 시 사유 입력 필수'); return; }
+    if (!reply.trim()) { setMsg('거절 시 사유 입력 필수'); return; }
     if (!confirm(`${userName}님의 요청을 거절?`)) return;
     const r = await rejectCoinRequest(reqId, reply);
-    if ((r as any).error) { setMsg('❌ ' + (r as any).error); return; }
-    setMsg(`✅ 요청 거절 처리됨`);
+    if ((r as any).error) { setMsg('' + (r as any).error); return; }
+    setMsg(`요청 거절 처리됨`);
     setAdminReplies({ ...adminReplies, [reqId]: '' });
     await refresh();
   };
@@ -84,8 +84,8 @@ export default function AdminPage() {
     const reply = adminReplies[orderId] || '';
     if (!confirm(`${buyerName}님 환불 승인 (코인 반환)?`)) return;
     const r = await approveRefund(orderId, reply);
-    if ((r as any).error) { setMsg('❌ ' + (r as any).error); return; }
-    setMsg(`✅ 환불 처리 완료`);
+    if ((r as any).error) { setMsg('' + (r as any).error); return; }
+    setMsg(`환불 처리 완료`);
     setAdminReplies({ ...adminReplies, [orderId]: '' });
     await refresh();
   };
@@ -101,7 +101,7 @@ export default function AdminPage() {
       <h1 className="bj-page-title">관리자 대시보드</h1>
       <p className="bj-page-sub">충전 요청 처리 · 환불 처리 · 사용자 코인 관리</p>
 
-      {msg && <div className={`bj-alert ${msg.startsWith('✅') ? 'bj-alert-success' : 'bj-alert-error'}`}>{msg}</div>}
+      {msg && <div className={`bj-alert ${/완료|지급|처리/.test(msg) ? 'bj-alert-success' : 'bj-alert-error'}`}>{msg}</div>}
 
       <div className="bj-stats">
         <div className="bj-stat"><div className="bj-stat-label">사용자</div><div className="bj-stat-value">{users.length}</div></div>
@@ -119,7 +119,7 @@ export default function AdminPage() {
       {/* 환불 요청 */}
       {refundList.length > 0 && (
         <div className="bj-admin-card" style={{ marginBottom: 20, borderColor: 'var(--accent)' }}>
-          <h3 style={{ color: 'var(--accent)' }}>🛡️ 환불 요청 ({refundList.length}건)</h3>
+          <h3 style={{ color: 'var(--accent)' }}>환불 요청 ({refundList.length}건)</h3>
           {refundList.map((o: any) => (
             <div key={o.id} style={{ padding: '14px 0', borderBottom: '1px solid var(--border)' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
@@ -150,7 +150,7 @@ export default function AdminPage() {
       {/* 코인 충전 요청 */}
       {pendingList.length > 0 && (
         <div className="bj-admin-card" style={{ marginBottom: 20 }}>
-          <h3>💌 대기 중인 충전 요청 ({pendingList.length}건)</h3>
+          <h3>대기 중인 충전 요청 ({pendingList.length}건)</h3>
           {pendingList.map((r: any) => (
             <div key={r.id} style={{ padding: '14px 0', borderBottom: '1px solid var(--border)' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6, flexWrap: 'wrap', gap: 8 }}>

@@ -28,8 +28,8 @@ export default function OrdersPage() {
   const onConfirm = async (orderId: string) => {
     if (!confirm('상품을 정상적으로 받으셨나요?\n구매 확정 시 판매자에게 코인이 지급되며 되돌릴 수 없습니다.')) return;
     const r = await confirmOrder(orderId, user.id);
-    if ((r as any).error) { setMsg('❌ ' + (r as any).error); return; }
-    setMsg('✅ 구매 확정 완료. 판매자에게 정산되었습니다.');
+    if ((r as any).error) { setMsg((r as any).error); return; }
+    setMsg('구매 확정 완료. 판매자에게 정산되었습니다.');
     window.dispatchEvent(new Event('altroshop:refresh'));
     await refresh(user.id);
   };
@@ -38,8 +38,8 @@ export default function OrdersPage() {
     const reason = prompt('환불 사유를 입력해주세요:');
     if (!reason || !reason.trim()) return;
     const r = await requestRefund(orderId, user.id, reason.trim());
-    if ((r as any).error) { setMsg('❌ ' + (r as any).error); return; }
-    setMsg('✅ 환불 요청을 보냈습니다. 관리자가 처리합니다.');
+    if ((r as any).error) { setMsg((r as any).error); return; }
+    setMsg('환불 요청을 보냈습니다. 관리자가 처리합니다.');
     await refresh(user.id);
   };
 
@@ -60,7 +60,7 @@ export default function OrdersPage() {
       <h1 className="bj-page-title">구매내역</h1>
       <p className="bj-page-sub">안전결제 / 구매 확정 / 환불 요청</p>
 
-      {msg && <div className={`bj-alert ${msg.startsWith('✅') ? 'bj-alert-success' : 'bj-alert-error'}`}>{msg}</div>}
+      {msg && <div className={`bj-alert ${/완료|보냈/.test(msg) ? 'bj-alert-success' : 'bj-alert-error'}`}>{msg}</div>}
 
       {loading ? (
         <div className="bj-empty">불러오는 중...</div>

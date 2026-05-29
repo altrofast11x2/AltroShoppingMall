@@ -8,21 +8,22 @@ export const dynamic = 'force-dynamic';
 
 const Ico: any = {
   Heart: (p: any) => <svg viewBox="0 0 24 24" fill={p.fill || 'none'} stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...p}><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>,
-  Search: (p: any) => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...p}><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>,
-  Phone: (p: any) => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...p}><rect x="5" y="2" width="14" height="20" rx="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>,
-  Sports: (p: any) => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...p}><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/></svg>,
+  Clock: (p: any) => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...p}><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>,
+  Sports: (p: any) => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...p}><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20M12 2a14.5 14.5 0 0 1 0 20M2 12h20"/></svg>,
   Digital: (p: any) => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...p}><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>,
   Star: (p: any) => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...p}><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>,
   Coin: (p: any) => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...p}><circle cx="12" cy="12" r="9"/><path d="M9.5 9.5h5a2 2 0 1 1 0 4H9.5v4M14.5 13.5L9.5 18"/></svg>,
+  Arrow: (p: any) => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...p}><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>,
+  Sparkles: (p: any) => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" {...p}><path d="M12 3v3M12 18v3M3 12h3M18 12h3M5.6 5.6l2.1 2.1M16.3 16.3l2.1 2.1M5.6 18.4l2.1-2.1M16.3 7.7l2.1-2.1"/><circle cx="12" cy="12" r="3"/></svg>,
 };
 
 const QUICK = [
-  { label: '찜', icon: <Ico.Heart width={28} height={28} fill="currentColor"/>, href: '/?cat=liked', authRequired: true },
-  { label: '최근본상품', icon: <Ico.Search width={26} height={26}/>, href: '/' },
-  { label: '코인충전', icon: <Ico.Coin width={26} height={26}/>, href: '/coin-request', authRequired: true },
-  { label: '스포츠', icon: <Ico.Sports width={26} height={26}/>, href: '/?cat=sports' },
-  { label: '디지털', icon: <Ico.Digital width={26} height={26}/>, href: '/?cat=digital' },
-  { label: '스타굿즈', icon: <Ico.Star width={26} height={26}/>, href: '/?cat=stargoods' },
+  { label: '찜',         icon: <Ico.Heart width={26} height={26}/>,    href: '/?cat=liked', authRequired: true },
+  { label: '최근본상품',  icon: <Ico.Clock width={26} height={26}/>,    href: '/' },
+  { label: '코인충전',    icon: <Ico.Coin width={26} height={26}/>,     href: '/coin-request', authRequired: true },
+  { label: '스포츠',      icon: <Ico.Sports width={26} height={26}/>,   href: '/?cat=sports' },
+  { label: '디지털',      icon: <Ico.Digital width={26} height={26}/>,  href: '/?cat=digital' },
+  { label: '스타굿즈',    icon: <Ico.Star width={26} height={26}/>,     href: '/?cat=stargoods' },
 ];
 
 export default function HomePage() {
@@ -95,26 +96,43 @@ function Home() {
         <>
           <section className="bj-hero">
             <div className="bj-hero-text">
-              <div className="bj-hero-eyebrow">AltroShop 커뮤니티 마켓</div>
-              <div className="bj-hero-title">
-                사고, 팔고, 둘러보고<br />
-                이제 모두 첫 화면에서
+              <div className="bj-hero-eyebrow">
+                ALTRO <strong>SHOP</strong> · POWERED BY ALTROBOARD
               </div>
+              <h1 className="bj-hero-title">
+                AltroBoard 와 함께하는<br />
+                신뢰의 커뮤니티 마켓
+              </h1>
+              <p className="bj-hero-sub">
+                별도 가입 없이 AltroBoard 계정 그대로 로그인.
+                안전결제로 상품을 사고팔고, 댓글과 좋아요로 소통하세요.
+                첫 로그인 시 100코인 보너스도 드립니다.
+              </p>
+              <a href="https://altroboard.vercel.app/" target="_blank" rel="noopener noreferrer" className="bj-hero-cta">
+                AltroBoard 둘러보기 <Ico.Arrow width={14} height={14}/>
+              </a>
             </div>
-            <div className="bj-hero-emoji">🛍️</div>
-            <div className="bj-hero-meta">1/1</div>
+            <div className="bj-hero-art" aria-hidden>
+              <svg viewBox="0 0 120 120" width={140} height={140} fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M30 42h60l-6 56a8 8 0 0 1-8 7H44a8 8 0 0 1-8-7z"/>
+                <path d="M44 42V28a16 16 0 0 1 32 0v14"/>
+                <circle cx="44" cy="64" r="3" fill="currentColor"/>
+                <circle cx="76" cy="64" r="3" fill="currentColor"/>
+              </svg>
+            </div>
+            <div className="bj-hero-meta">AltroShop · 01</div>
           </section>
 
           <section className="bj-quick">
-            {QUICK.map(q => (
+            {QUICK.map(qi => (
               <Link
-                key={q.label}
-                href={q.href}
+                key={qi.label}
+                href={qi.href}
                 className="bj-quick-item"
-                onClick={(e) => q.authRequired && requireLogin(e)}
+                onClick={(e) => qi.authRequired && requireLogin(e)}
               >
-                <div className="bj-quick-icon">{q.icon}</div>
-                <div className="bj-quick-label">{q.label}</div>
+                <div className="bj-quick-icon">{qi.icon}</div>
+                <div className="bj-quick-label">{qi.label}</div>
               </Link>
             ))}
           </section>

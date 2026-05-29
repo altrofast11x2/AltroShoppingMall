@@ -150,9 +150,15 @@ export default function ProductDetail({ params }: { params: Promise<{ id: string
           <div className="bj-detail-meta">
             <span className="bj-detail-meta-item">{fmt(product.createdAt)}</span>
             <span>·</span>
-            <span className="bj-detail-meta-item">♡ {product.likeCount}</span>
+            <span className="bj-detail-meta-item">
+              <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+              {product.likeCount}
+            </span>
             <span>·</span>
-            <span className="bj-detail-meta-item">💬 {comments.length}</span>
+            <span className="bj-detail-meta-item">
+              <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>
+              {comments.length}
+            </span>
           </div>
 
           <dl className="bj-info-table">
@@ -187,7 +193,7 @@ export default function ProductDetail({ params }: { params: Promise<{ id: string
             {isOwner ? (
               <>
                 <Link href={`/product/${id}/edit`} className="bj-buy-btn outline" style={{ flex: 1 }}>수정</Link>
-                <button className="bj-buy-btn" style={{ background: '#1a1a1a' }} onClick={onDeleteProduct}>삭제</button>
+                <button className="bj-buy-btn" style={{ background: 'var(--ink)' }} onClick={onDeleteProduct}>삭제</button>
               </>
             ) : (
               <button className="bj-buy-btn" onClick={onBuyClick}>구매하기</button>
@@ -243,7 +249,7 @@ export default function ProductDetail({ params }: { params: Promise<{ id: string
       {showBuy && (
         <div className="bj-modal-overlay" onClick={() => setShowBuy(false)}>
           <div className="bj-modal" onClick={e => e.stopPropagation()}>
-            <h3 className="bj-modal-title">안전결제로 구매하시겠습니까?</h3>
+            <h3 className="bj-modal-title">안전결제로 구매하시겠습니까</h3>
             <div className="bj-modal-body">
               <div style={{ display: 'flex', gap: 12, marginBottom: 14, alignItems: 'center' }}>
                 <img src={product.image} style={{ width: 60, height: 60, borderRadius: 6, objectFit: 'cover' }} alt=""/>

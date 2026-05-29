@@ -75,7 +75,7 @@ export default function CartPage() {
 
   const onCheckout = async () => {
     if (!enough) {
-      setMsg('❌ 코인이 부족합니다.');
+      setMsg('코인이 부족합니다.');
       return;
     }
     setConfirmModal(true);
@@ -86,13 +86,13 @@ export default function CartPage() {
     setMsg('');
     const r = await checkout(user.id);
     if ((r as any).error) {
-      setMsg('❌ ' + (r as any).error);
+      setMsg((r as any).error);
       setBusy(false);
       setConfirmModal(false);
       return;
     }
     setConfirmModal(false);
-    setMsg(`✅ 안전결제 완료! ${total.toLocaleString()}원 차감 / 잔액 ${(r as any).remaining.toLocaleString()}원`);
+    setMsg(`안전결제 완료. ${total.toLocaleString()}원 차감 / 잔액 ${(r as any).remaining.toLocaleString()}원`);
     await refresh(user.id);
     window.dispatchEvent(new Event('altroshop:refresh'));
     setBusy(false);
@@ -105,7 +105,7 @@ export default function CartPage() {
       <h1 className="bj-page-title">장바구니</h1>
       <p className="bj-page-sub">{loading ? '불러오는 중...' : `${lines.length}개 상품 / 안전결제 적용`}</p>
 
-      {msg && <div className={`bj-alert ${msg.startsWith('✅') ? 'bj-alert-success' : 'bj-alert-error'}`}>{msg}</div>}
+      {msg && <div className={`bj-alert ${msg.startsWith('안전결제 완료') ? 'bj-alert-success' : 'bj-alert-error'}`}>{msg}</div>}
 
       {loading ? (
         <div className="bj-empty">불러오는 중...</div>
@@ -158,7 +158,8 @@ export default function CartPage() {
             <div style={{ display: 'flex', gap: 8 }}>
               <button className="bj-btn" onClick={onClear} disabled={busy}>전체 비우기</button>
               <button className="bj-btn bj-btn-primary" onClick={onCheckout} disabled={busy || !enough}>
-                {busy ? '결제 중...' : '🛡️ 안전결제'}
+                <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                {busy ? '결제 중...' : '안전결제'}
               </button>
             </div>
           </div>
@@ -175,7 +176,7 @@ export default function CartPage() {
       {confirmModal && (
         <div className="bj-modal-overlay" onClick={() => setConfirmModal(false)}>
           <div className="bj-modal" onClick={e => e.stopPropagation()}>
-            <h3 className="bj-modal-title">🛡️ 안전결제 진행</h3>
+            <h3 className="bj-modal-title">안전결제 진행</h3>
             <div className="bj-modal-body">
               <div style={{ padding: '12px 0', borderBottom: '1px solid var(--border)' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between' }}>
