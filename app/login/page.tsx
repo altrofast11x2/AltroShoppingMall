@@ -20,7 +20,7 @@ export default function LoginPage() {
     try {
       if (tab === 'login') {
         const u = await loginUser(email, pw);
-        if (!u) { setErr('이메일 또는 비밀번호가 일치하지 않습니다. AltroBoard 계정이라면 같은 비밀번호로 시도해주세요.'); setBusy(false); return; }
+        if (!u) { setErr('이메일 또는 비밀번호가 일치하지 않습니다'); setBusy(false); return; }
         localStorage.setItem('altroshop_user', JSON.stringify(u));
         window.dispatchEvent(new Event('altroshop:refresh'));
         router.push('/');
@@ -35,66 +35,57 @@ export default function LoginPage() {
         router.push('/');
       }
     } catch (e: any) {
-      const msg = e?.message || String(e);
-      if (/permission|denied/i.test(msg)) {
-        setErr('Firebase 권한 오류. 관리자에게 알려주세요 (database rules 게시 필요)');
-      } else {
-        setErr(msg || '오류가 발생했습니다');
-      }
+      const m = e?.message || String(e);
+      setErr(/permission|denied/i.test(m) ? 'Firebase 권한 오류 (관리자 문의)' : m || '오류가 발생했습니다');
       setBusy(false);
     }
   };
 
   return (
-    <main className="page">
-      <div className="login-wrap">
-        <div className="login-box card card-accent">
-          <h2 style={{ fontFamily: 'var(--serif)', fontSize: '1.4rem', fontWeight: 700, textAlign: 'center', marginBottom: '1.25rem', color: 'var(--ink)' }}>
-            AltroShop
-          </h2>
-          <div className="tab-row">
-            <button className={`tab-btn ${tab === 'login' ? 'active' : ''}`} onClick={() => { setTab('login'); setErr(''); }}>로그인</button>
-            <button className={`tab-btn ${tab === 'register' ? 'active' : ''}`} onClick={() => { setTab('register'); setErr(''); }}>회원가입</button>
-          </div>
+    <main className="bj-form-wrap">
+      <div className="bj-form-title">AltroShop</div>
 
-          {err && <div className="alert alert-error">{err}</div>}
-
-          {tab === 'register' && (
-            <div className="form-group">
-              <label>이름</label>
-              <input type="text" value={name} onChange={e => setName(e.target.value)} placeholder="표시될 이름" />
-            </div>
-          )}
-          <div className="form-group">
-            <label>이메일</label>
-            <input type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="email@example.com"
-              onKeyDown={e => e.key === 'Enter' && submit()} />
-          </div>
-          <div className="form-group">
-            <label>비밀번호</label>
-            <input type="password" value={pw} onChange={e => setPw(e.target.value)} placeholder="비밀번호"
-              onKeyDown={e => e.key === 'Enter' && submit()} />
-          </div>
-          {tab === 'register' && (
-            <div className="form-group">
-              <label>비밀번호 확인</label>
-              <input type="password" value={pw2} onChange={e => setPw2(e.target.value)} placeholder="다시 입력"
-                onKeyDown={e => e.key === 'Enter' && submit()} />
-            </div>
-          )}
-
-          <button className="btn btn-primary btn-block" onClick={submit} disabled={busy}>
-            {busy ? '처리 중...' : (tab === 'login' ? '로그인' : '가입하기')}
-          </button>
-
-          {tab === 'login' && (
-            <p style={{ fontFamily: 'var(--mono)', fontSize: '.72rem', color: 'var(--admin)', marginTop: '1rem', textAlign: 'center', padding: '.6rem', background: 'rgba(26,110,58,0.08)', border: '1px solid rgba(26,110,58,0.25)', borderRadius: 2 }}>
-              ✨ <strong>AltroBoard 계정 그대로 사용 가능</strong><br />
-              같은 이메일·비밀번호로 바로 로그인 (첫 로그인 시 100코인 보너스)
-            </p>
-          )}
-        </div>
+      <div className="bj-tabs">
+        <button className={`bj-tab ${tab === 'login' ? 'active' : ''}`} onClick={() => { setTab('login'); setErr(''); }}>로그인</button>
+        <button className={`bj-tab ${tab === 'register' ? 'active' : ''}`} onClick={() => { setTab('register'); setErr(''); }}>회원가입</button>
       </div>
+
+      {err && <div className="bj-alert bj-alert-error">{err}</div>}
+
+      {tab === 'register' && (
+        <div className="bj-field">
+          <label>이름</label>
+          <input type="text" value={name} onChange={e => setName(e.target.value)} placeholder="표시될 이름"/>
+        </div>
+      )}
+      <div className="bj-field">
+        <label>이메일</label>
+        <input type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="email@example.com"
+          onKeyDown={e => e.key === 'Enter' && submit()}/>
+      </div>
+      <div className="bj-field">
+        <label>비밀번호</label>
+        <input type="password" value={pw} onChange={e => setPw(e.target.value)} placeholder="비밀번호"
+          onKeyDown={e => e.key === 'Enter' && submit()}/>
+      </div>
+      {tab === 'register' && (
+        <div className="bj-field">
+          <label>비밀번호 확인</label>
+          <input type="password" value={pw2} onChange={e => setPw2(e.target.value)} placeholder="다시 입력"
+            onKeyDown={e => e.key === 'Enter' && submit()}/>
+        </div>
+      )}
+
+      <button className="bj-btn bj-btn-primary bj-btn-block" onClick={submit} disabled={busy} style={{ marginTop: 6 }}>
+        {busy ? '처리 중...' : (tab === 'login' ? '로그인' : '가입하기')}
+      </button>
+
+      {tab === 'login' && (
+        <div className="bj-notice" style={{ marginTop: 18, textAlign: 'center' }}>
+          AltroBoard 계정으로도 로그인할 수 있습니다.<br />
+          AltroBoard 계정으로 첫 로그인 시 <strong style={{ color: 'var(--accent)' }}>100코인 보너스</strong>를 드립니다.
+        </div>
+      )}
     </main>
   );
 }
