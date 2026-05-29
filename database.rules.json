@@ -60,6 +60,11 @@
       ".read": true,
       ".write": true,
       ".indexOn": ["createdAt", "userId", "status"]
+    },
+    "shop_reports": {
+      ".read": true,
+      ".write": true,
+      ".indexOn": ["createdAt", "status"]
     }
   }
 }

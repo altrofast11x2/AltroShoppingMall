@@ -25,6 +25,7 @@ export default function CoinRequestPage() {
     const raw = localStorage.getItem('altroshop_user');
     if (!raw) { router.replace('/login'); return; }
     const s = JSON.parse(raw);
+    if (s.isAdmin) { router.replace('/admin'); return; } // 관리자는 본인에게 충전 요청 불필요
     setUser(s);
     refresh(s.id);
   }, [router]);

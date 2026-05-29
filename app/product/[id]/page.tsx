@@ -3,8 +3,9 @@ import { useState, useEffect, use } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import {
-  getProduct, listComments, addComment, toggleLike, addToCart, deleteProduct, getUser,
+  getProduct, listComments, addComment, toggleLike, addToCart, deleteProduct, getUser, checkoutDirect,
 } from '@/lib/shop';
+import { slugToLabel } from '@/lib/categories';
 
 const Ico: any = {
   Heart: (p: any) => <svg viewBox="0 0 24 24" fill={p.fill || 'none'} stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...p}><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>,
@@ -80,6 +81,7 @@ export default function ProductDetail({ params }: { params: Promise<{ id: string
     setShowBuy(true);
   };
 
+  // 바로 구매 — 코인 즉시 차감 (안전결제/에스크로)
   const onConfirmBuy = async () => {
     if (!requireLogin()) return;
     if ((user.coins || 0) < product.price) {
@@ -87,12 +89,27 @@ export default function ProductDetail({ params }: { params: Promise<{ id: string
       router.push('/coin-request');
       return;
     }
+    setBusy(true);
+    const r = await checkoutDirect(user.id, id, 1);
+    setBusy(false);
+    if ((r as any).error) { alert((r as any).error); return; }
+    // 세션 코인 잔액 동기화 → 헤더/마이페이지에 즉시 반영
+    const merged = { ...user, coins: (r as any).remaining };
+    setUser(merged);
+    localStorage.setItem('altroshop_user', JSON.stringify(merged));
+    window.dispatchEvent(new Event('altroshop:refresh'));
+    setShowBuy(false);
+    alert(`안전결제 완료\n${Number((r as any).total).toLocaleString()}코인 차감 / 잔액 ${Number((r as any).remaining).toLocaleString()}코인\n\n상품 수령 후 구매내역에서 "구매 확정"을 눌러주세요.`);
+    router.push('/orders');
+  };
+
+  // 장바구니에 담기 (선택)
+  const onAddCart = async () => {
+    if (!requireLogin()) return;
     await addToCart(user.id, id, 1);
     setShowBuy(false);
     window.dispatchEvent(new Event('altroshop:refresh'));
-    if (confirm('장바구니에 담았습니다.\n장바구니에서 안전결제로 진행하시겠습니까?')) {
-      router.push('/cart');
-    }
+    if (confirm('장바구니에 담았습니다.\n장바구니로 이동하시겠습니까?')) router.push('/cart');
   };
 
   const onShare = async () => {
@@ -139,7 +156,7 @@ export default function ProductDetail({ params }: { params: Promise<{ id: string
         <div className="bj-detail-info">
           <div className="bj-detail-title-row">
             <h1 className="bj-detail-title">{product.name}</h1>
-            <a className="bj-detail-report" href="#">신고하기</a>
+            <Link className="bj-detail-report" href={`/report?type=product&id=${id}&name=${encodeURIComponent(product.name)}`}>신고하기</Link>
           </div>
 
           <div>
@@ -164,6 +181,8 @@ export default function ProductDetail({ params }: { params: Promise<{ id: string
           <dl className="bj-info-table">
             <dt>판매자</dt>
             <dd>{product.sellerName}</dd>
+            {product.category && (<><dt>카테고리</dt>
+            <dd><Link href={`/?cat=${product.category}`} style={{ color: 'var(--accent)' }}>{slugToLabel(product.category)}</Link></dd></>)}
             <dt>상품상태</dt>
             <dd>{product.updatedAt ? '재등록 / 수정됨' : '새 상품'}</dd>
             <dt>수량</dt>
@@ -272,16 +291,23 @@ export default function ProductDetail({ params }: { params: Promise<{ id: string
                   </strong>
                 </div>
                 <div style={{ fontSize: 12, color: 'var(--muted)', marginTop: 8, paddingTop: 8, borderTop: '1px solid var(--border)' }}>
-                  ※ 장바구니에 담은 뒤 안전결제로 진행됩니다
+                  ※ 결제 시 코인이 즉시 차감되어 에스크로에 보관됩니다
                 </div>
               </div>
             </div>
-            <div style={{ display: 'flex', gap: 8 }}>
-              <button className="bj-btn bj-btn-block" onClick={() => setShowBuy(false)}>취소</button>
-              <button className="bj-btn bj-btn-primary bj-btn-block" onClick={onConfirmBuy}>
-                {(user?.coins || 0) >= product.price ? '장바구니로' : '코인 충전 요청'}
-              </button>
-            </div>
+            {(user?.coins || 0) >= product.price ? (
+              <div style={{ display: 'flex', gap: 8 }}>
+                <button className="bj-btn bj-btn-block" onClick={onAddCart} disabled={busy}>장바구니 담기</button>
+                <button className="bj-btn bj-btn-primary bj-btn-block" onClick={onConfirmBuy} disabled={busy}>
+                  {busy ? '결제 중...' : '바로 결제'}
+                </button>
+              </div>
+            ) : (
+              <div style={{ display: 'flex', gap: 8 }}>
+                <button className="bj-btn bj-btn-block" onClick={() => setShowBuy(false)} disabled={busy}>취소</button>
+                <button className="bj-btn bj-btn-primary bj-btn-block" onClick={onConfirmBuy} disabled={busy}>코인 충전 요청</button>
+              </div>
+            )}
           </div>
         </div>
       )}

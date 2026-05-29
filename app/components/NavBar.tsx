@@ -3,6 +3,8 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { getUser } from '@/lib/shop';
+import { CATEGORIES, HEADER_CATEGORY_SLUGS } from '@/lib/categories';
+import { addRecentSearch } from '@/lib/recent';
 
 // ── SVG 아이콘 (이모지 절대 사용 안 함) ────────────────────
 const I: any = {
@@ -32,32 +34,29 @@ const I: any = {
   Shorts: (p: any) => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" {...p}><rect x="2" y="2" width="20" height="20" rx="3"/><polygon points="10 8 16 12 10 16 10 8" fill="currentColor"/></svg>,
   Music: (p: any) => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" {...p}><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>,
   Crown: (p: any) => <svg viewBox="0 0 24 24" fill="currentColor" {...p}><path d="M2 8l4 4 6-8 6 8 4-4-2 12H4z"/></svg>,
+  Cog: (p: any) => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" {...p}><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>,
 };
 
-const CATS = [
-  { label: '카테고리', href: '/', icon: true },
-  { label: '여성의류', href: '/?cat=women' },
-  { label: '남성의류', href: '/?cat=men' },
-  { label: '스포츠/레저', href: '/?cat=sports' },
-  { label: '스타굿즈', href: '/?cat=stargoods' },
-  { label: '디지털', href: '/?cat=digital' },
-  { label: '키덜트', href: '/?cat=kidult' },
-];
+// 헤더 카테고리 바에 직접 노출할 항목 (공용 카테고리 정의 기반)
+const HEADER_CATS = HEADER_CATEGORY_SLUGS
+  .map(slug => CATEGORIES.find(c => c.slug === slug))
+  .filter(Boolean) as { slug: string; label: string }[];
 
 // "더 보기" 섹션 항목 (altroboard 패턴)
+// adminHide: 관리자에게는 숨김 (관리자가 자신에게 코인 요청할 필요 없음)
 const MORE_ITEMS = [
   { label: '내 프로필',        href: '/profile',       icon: <I.User width={18} height={18}/>, auth: true },
   { label: '내가 등록한 상품', href: '/profile',       icon: <I.Upload width={18} height={18}/>, auth: true },
   { label: '구매내역',         href: '/orders',        icon: <I.Receipt width={18} height={18}/>, auth: true },
-  { label: '좋아요한 상품',     href: '/',              icon: <I.Heart width={18} height={18}/>, auth: true },
-  { label: '코인 충전 요청',    href: '/coin-request',  icon: <I.Coin width={18} height={18}/>, auth: true },
-  { label: '문제 신고',         href: 'https://altroboard.vercel.app/admin/reports', icon: <I.Flag width={18} height={18}/>, external: true },
+  { label: '찜한 상품',         href: '/?cat=liked',    icon: <I.Heart width={18} height={18}/>, auth: true },
+  { label: '코인 충전 요청',    href: '/coin-request',  icon: <I.Coin width={18} height={18}/>, auth: true, adminHide: true },
+  { label: '문제 신고',         href: '/report',        icon: <I.Flag width={18} height={18}/> },
+  { label: '설정',             href: '/settings',      icon: <I.Cog width={18} height={18}/> },
   { label: '계정 전환',         href: '/login',         icon: <I.Swap width={18} height={18}/>, auth: true },
 ];
 
-// Altro 다른 앱 (altroboard 서비스들)
+// Altro 다른 앱 (altroboard 서비스들) — AltroBoard 바로가기는 제거
 const OTHER_APPS = [
-  { label: 'AltroBoard',  href: 'https://altroboard.vercel.app/',          icon: <I.Apps width={18} height={18}/> },
   { label: '게시판',       href: 'https://altroboard.vercel.app/board',     icon: <I.Board width={18} height={18}/> },
   { label: '갤러리',       href: 'https://altroboard.vercel.app/galleries', icon: <I.Gallery width={18} height={18}/> },
   { label: '쇼츠',         href: 'https://altroboard.vercel.app/shorts',    icon: <I.Shorts width={18} height={18}/> },
@@ -118,11 +117,15 @@ export default function NavBar() {
 
   const submitSearch = (e: any) => {
     e.preventDefault();
-    if (!search.trim()) return;
-    router.push(`/?q=${encodeURIComponent(search.trim())}`);
+    const t = search.trim();
+    if (!t) return;
+    if (user) addRecentSearch(t); // 로그인 유저만 최근 검색 기록
+    window.dispatchEvent(new Event('altroshop:refresh'));
+    router.push(`/?q=${encodeURIComponent(t)}`);
   };
 
   const coins = Number(user?.coins || 0);
+  const isAdmin = !!user?.isAdmin;
 
   return (
     <>
@@ -145,7 +148,11 @@ export default function NavBar() {
           <div className="bj-header-right">
             {user ? (
               <>
-                <Link href="/coin-request" className="bj-user-coin" title="코인 충전 요청">
+                <Link
+                  href={isAdmin ? '/admin' : '/coin-request'}
+                  className="bj-user-coin"
+                  title={isAdmin ? '관리자 패널' : '코인 충전 요청'}
+                >
                   <I.Coin width={14} height={14}/> {coins.toLocaleString()}
                 </Link>
                 <button onClick={() => setDrawer(true)} className="bj-avatar" aria-label="메뉴">
@@ -177,21 +184,27 @@ export default function NavBar() {
         <div className="bj-catbar">
           <div className="bj-catbar-inner">
             <div className="bj-cats">
-              {CATS.map(c => (
-                <Link key={c.label} href={c.href} className="bj-cat">
-                  {c.icon && (
-                    <span className="bj-cat-icon">
-                      <I.Menu width={16} height={16}/>
-                    </span>
-                  )}
+              {/* 전체 카테고리 — 호버하면 드롭다운 */}
+              <div className="bj-cat-wrap">
+                <span className="bj-cat">
+                  <span className="bj-cat-icon"><I.Menu width={16} height={16}/></span>
+                  카테고리
+                </span>
+                <div className="bj-cat-dropdown">
+                  {CATEGORIES.map(c => (
+                    <Link key={c.slug} href={`/?cat=${c.slug}`} className="bj-cat-dd-item">
+                      {c.label}
+                    </Link>
+                  ))}
+                </div>
+              </div>
+              {HEADER_CATS.map(c => (
+                <Link key={c.slug} href={`/?cat=${c.slug}`} className="bj-cat">
                   {c.label}
                 </Link>
               ))}
             </div>
             <div className="bj-cats">
-              <a href="https://altroboard.vercel.app/" target="_blank" rel="noopener noreferrer" className="bj-cat-ext">
-                AltroBoard <I.Ext width={12} height={12}/>
-              </a>
               {user && (
                 <Link href="/upload" className="bj-cat-ext">
                   판매자센터 <I.Ext width={12} height={12}/>
@@ -227,12 +240,18 @@ export default function NavBar() {
                   </div>
                 </Link>
                 <div className="bj-drawer-coin">
-                  <div className="bj-drawer-coin-label">보유 코인</div>
+                  <div className="bj-drawer-coin-label">보유 코인{isAdmin ? ' (관리자)' : ''}</div>
                   <div className="bj-drawer-coin-value">{coins.toLocaleString()}</div>
                   <div className="bj-drawer-coin-won">= {coins.toLocaleString()}원 · 10,000코인 = 10,000원</div>
-                  <Link href="/coin-request" className="bj-drawer-coin-btn">
-                    <I.Coin width={14} height={14}/> 코인 충전 요청
-                  </Link>
+                  {isAdmin ? (
+                    <Link href="/admin" className="bj-drawer-coin-btn">
+                      <I.Shield width={14} height={14}/> 관리자 패널
+                    </Link>
+                  ) : (
+                    <Link href="/coin-request" className="bj-drawer-coin-btn">
+                      <I.Coin width={14} height={14}/> 코인 충전 요청
+                    </Link>
+                  )}
                 </div>
               </>
             ) : (
@@ -259,20 +278,14 @@ export default function NavBar() {
                 </button>
                 {moreOpen && (
                   <div className="bj-drawer-sublist">
-                    {MORE_ITEMS.filter(i => !i.auth || user).map(item => (
-                      item.external ? (
-                        <a key={item.label} href={item.href} target="_blank" rel="noopener noreferrer" className="bj-drawer-item">
-                          <span className="bj-drawer-item-icon">{item.icon}</span>
-                          {item.label}
-                          <span className="bj-drawer-item-ext"><I.Ext width={11} height={11}/></span>
-                        </a>
-                      ) : (
+                    {MORE_ITEMS
+                      .filter(i => (!i.auth || user) && !(i.adminHide && isAdmin))
+                      .map(item => (
                         <Link key={item.label} href={item.href} className={`bj-drawer-item ${pathname === item.href ? 'active' : ''}`}>
                           <span className="bj-drawer-item-icon">{item.icon}</span>
                           {item.label}
                         </Link>
-                      )
-                    ))}
+                      ))}
                     {user && (
                       <button className="bj-drawer-item danger" onClick={logout}>
                         <span className="bj-drawer-item-icon"><I.Logout width={18} height={18}/></span>

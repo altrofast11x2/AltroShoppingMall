@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation';
 import {
   listUsers, listProducts, listOrders, updateUserCoins, getUser,
   listCoinRequests, approveCoinRequest, rejectCoinRequest, approveRefund,
+  listReports, resolveReport,
 } from '@/lib/shop';
 
 export default function AdminPage() {
@@ -13,17 +14,19 @@ export default function AdminPage() {
   const [products, setProducts] = useState<any[]>([]);
   const [orders, setOrders] = useState<any[]>([]);
   const [coinRequests, setCoinRequests] = useState<any[]>([]);
+  const [reports, setReports] = useState<any[]>([]);
   const [addAmounts, setAddAmounts] = useState<Record<string, string>>({});
   const [adminReplies, setAdminReplies] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(true);
   const [msg, setMsg] = useState('');
 
   const refresh = async () => {
-    const [u, p, o, cr] = await Promise.all([listUsers(), listProducts(), listOrders(), listCoinRequests()]);
+    const [u, p, o, cr, rp] = await Promise.all([listUsers(), listProducts(), listOrders(), listCoinRequests(), listReports()]);
     setUsers(u.filter((x: any) => !x.isAdmin));
     setProducts(p);
     setOrders(o);
     setCoinRequests(cr);
+    setReports(rp);
     setLoading(false);
   };
 
@@ -90,11 +93,19 @@ export default function AdminPage() {
     await refresh();
   };
 
+  const onResolveReport = async (reportId: string) => {
+    if (!confirm('이 신고를 처리 완료로 표시할까요?')) return;
+    await resolveReport(reportId);
+    setMsg('신고 처리 완료');
+    await refresh();
+  };
+
   if (!me) return <main className="bj-main">리디렉트 중...</main>;
 
   const totalCoins = users.reduce((s, u) => s + (u.coins || 0), 0);
   const pendingList = coinRequests.filter((r: any) => r.status === 'pending');
   const refundList = orders.filter((o: any) => o.status === 'refund_requested');
+  const openReports = reports.filter((r: any) => r.status === 'open');
 
   return (
     <main className="bj-main">
@@ -113,6 +124,10 @@ export default function AdminPage() {
         <div className={`bj-stat ${refundList.length > 0 ? 'alert' : ''}`}>
           <div className="bj-stat-label">환불 요청{refundList.length > 0 ? ' (대기)' : ''}</div>
           <div className="bj-stat-value">{refundList.length}</div>
+        </div>
+        <div className={`bj-stat ${openReports.length > 0 ? 'alert' : ''}`}>
+          <div className="bj-stat-label">신고{openReports.length > 0 ? ' (대기)' : ''}</div>
+          <div className="bj-stat-value">{openReports.length}</div>
         </div>
       </div>
 
@@ -141,6 +156,33 @@ export default function AdminPage() {
               />
               <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
                 <button className="bj-btn bj-btn-primary bj-btn-sm" onClick={() => onApproveRefund(o.id, o.buyerName)}>환불 승인 + 코인 반환</button>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* 문제 신고 */}
+      {openReports.length > 0 && (
+        <div className="bj-admin-card" style={{ marginBottom: 20 }}>
+          <h3>접수된 신고 ({openReports.length}건)</h3>
+          {openReports.map((r: any) => (
+            <div key={r.id} style={{ padding: '14px 0', borderBottom: '1px solid var(--border)' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6, flexWrap: 'wrap', gap: 8 }}>
+                <div>
+                  <strong>{r.reason}</strong>
+                  <span style={{ color: 'var(--muted)', fontSize: 12, marginLeft: 6 }}>
+                    by {r.reporterName || '익명'}{r.targetName ? ` · 대상: ${r.targetName}` : ''}
+                  </span>
+                </div>
+                <span style={{ fontSize: 12, color: 'var(--muted)' }}>{new Date(r.createdAt).toLocaleString('ko-KR')}</span>
+              </div>
+              <div className="bj-notice" style={{ marginBottom: 8 }}>{r.detail}</div>
+              <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
+                {r.targetType === 'product' && r.targetId && (
+                  <a className="bj-btn bj-btn-sm" href={`/product/${r.targetId}`} target="_blank" rel="noopener noreferrer">상품 보기</a>
+                )}
+                <button className="bj-btn bj-btn-primary bj-btn-sm" onClick={() => onResolveReport(r.id)}>처리 완료</button>
               </div>
             </div>
           ))}

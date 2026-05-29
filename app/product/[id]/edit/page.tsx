@@ -1,7 +1,9 @@
 'use client';
 import { useState, useEffect, useRef, use } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { getProduct, updateProduct } from '@/lib/shop';
+import { CATEGORIES } from '@/lib/categories';
 
 export default function EditProductPage({ params }: { params: Promise<{ id: string }> }) {
   const router = useRouter();
@@ -12,6 +14,8 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
   const [name, setName] = useState('');
   const [desc, setDesc] = useState('');
   const [price, setPrice] = useState('');
+  const [category, setCategory] = useState('');
+  const [customCat, setCustomCat] = useState('');
   const [image, setImage] = useState<string | null>(null);
   const [err, setErr] = useState('');
   const [busy, setBusy] = useState(false);
@@ -34,8 +38,12 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
       setProduct(p);
       setName(p.name);
       setDesc(p.desc);
-      setPrice(String(p.price));
+      setPrice(String(p.price || ''));
       setImage(p.image);
+      // 기존 카테고리가 프리셋이면 선택, 아니면 직접입력으로
+      const known = CATEGORIES.some(c => c.slug === p.category);
+      if (p.category && known) setCategory(p.category);
+      else if (p.category) { setCategory('__custom__'); setCustomCat(p.category); }
     })();
   }, [id, router]);
 
@@ -65,18 +73,23 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
     reader.readAsDataURL(file);
   };
 
+  const onPriceChange = (v: string) => setPrice(v.replace(/[^\d]/g, '').slice(0, 10));
+  const priceDisplay = price ? Number(price).toLocaleString() : '';
+
   const submit = async () => {
     setErr('');
     if (!name.trim()) { setErr('상품명을 입력해주세요'); return; }
+    const finalCat = category === '__custom__' ? customCat.trim() : category;
+    if (!finalCat) { setErr('카테고리를 선택하거나 직접 입력해주세요'); return; }
     if (!desc.trim()) { setErr('상품 설명을 입력해주세요'); return; }
     const p = parseInt(price, 10);
-    if (!p || p < 1) { setErr('가격은 1코인 이상이어야 합니다'); return; }
+    if (!p || p < 1) { setErr('가격은 1원 이상이어야 합니다'); return; }
     if (!image) { setErr('상품 사진이 필요합니다'); return; }
 
     setBusy(true);
     try {
       await updateProduct(id, {
-        name: name.trim(), desc: desc.trim(), price: p, image,
+        name: name.trim(), desc: desc.trim(), price: p, image, category: finalCat,
       });
       alert('수정 완료');
       router.push(`/product/${id}`);
@@ -86,71 +99,76 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
     }
   };
 
-  if (!user || !product) return <main className="page"><div className="container">로딩 중...</div></main>;
+  if (!user || !product) return <main className="bj-main">로딩 중...</main>;
 
   return (
-    <main className="page">
-      <div className="container" style={{ maxWidth: 720 }}>
-        <a href={`/product/${id}`} className="back-link">← 상품으로 돌아가기</a>
-        <div className="section-header">
-          <div>
-            <h2>상품 수정</h2>
-            <p>변경 사항은 즉시 반영됩니다</p>
-          </div>
+    <main className="bj-main" style={{ maxWidth: 720 }}>
+      <Link href={`/product/${id}`} className="bj-back-link">← 상품으로 돌아가기</Link>
+      <h1 className="bj-page-title">상품 수정</h1>
+      <p className="bj-page-sub">변경 사항은 즉시 반영됩니다</p>
+
+      {err && <div className="bj-alert bj-alert-error">{err}</div>}
+
+      <div className="bj-field">
+        <label>상품 사진</label>
+        <div
+          className={`bj-drop ${dragOver ? 'over' : ''}`}
+          onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
+          onDragLeave={() => setDragOver(false)}
+          onDrop={(e) => { e.preventDefault(); setDragOver(false); const f = e.dataTransfer.files?.[0]; if (f) handleFile(f); }}
+          onClick={() => fileRef.current?.click()}
+        >
+          {image ? (
+            <img src={image} alt="미리보기"/>
+          ) : (
+            <div className="bj-drop-text">클릭 또는 드래그해서 사진 변경<br/><strong>JPG / PNG / WebP</strong></div>
+          )}
+          <input ref={fileRef} type="file" accept="image/*" onChange={(e) => e.target.files?.[0] && handleFile(e.target.files[0])}/>
         </div>
+      </div>
 
-        <div className="card card-accent">
-          {err && <div className="alert alert-error">{err}</div>}
+      <div className="bj-field">
+        <label>상품명</label>
+        <input type="text" value={name} onChange={e => setName(e.target.value)} maxLength={60}/>
+      </div>
 
-          <div className="form-group">
-            <label>상품 사진</label>
-            <div
-              className={`drop-zone ${dragOver ? 'drag-over' : ''}`}
-              onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
-              onDragLeave={() => setDragOver(false)}
-              onDrop={(e) => {
-                e.preventDefault(); setDragOver(false);
-                const f = e.dataTransfer.files?.[0];
-                if (f) handleFile(f);
-              }}
-              onClick={() => fileRef.current?.click()}
-            >
-              {image ? (
-                <img src={image} className="drop-preview" alt="미리보기" />
-              ) : (
-                <div className="drop-zone-text">📷 클릭하거나 드래그해서 사진 변경</div>
-              )}
-              <input
-                ref={fileRef}
-                type="file"
-                accept="image/*"
-                onChange={(e) => e.target.files?.[0] && handleFile(e.target.files[0])}
-              />
-            </div>
-          </div>
+      <div className="bj-field">
+        <label>카테고리</label>
+        <select className="bj-select" value={category} onChange={e => setCategory(e.target.value)}>
+          <option value="">카테고리 선택</option>
+          {CATEGORIES.map(c => (
+            <option key={c.slug} value={c.slug}>{c.label}</option>
+          ))}
+          <option value="__custom__">직접 입력...</option>
+        </select>
+        {category === '__custom__' && (
+          <input
+            type="text"
+            value={customCat}
+            onChange={e => setCustomCat(e.target.value)}
+            maxLength={20}
+            placeholder="카테고리를 직접 입력 (예: 캠핑용품)"
+            style={{ marginTop: 8 }}
+          />
+        )}
+      </div>
 
-          <div className="form-group">
-            <label>상품명</label>
-            <input type="text" value={name} onChange={e => setName(e.target.value)} maxLength={60} />
-          </div>
+      <div className="bj-field">
+        <label>상품 설명</label>
+        <textarea value={desc} onChange={e => setDesc(e.target.value)} maxLength={600}/>
+      </div>
 
-          <div className="form-group">
-            <label>상품 설명</label>
-            <textarea value={desc} onChange={e => setDesc(e.target.value)} maxLength={600} />
-          </div>
+      <div className="bj-field">
+        <label>가격 (원)</label>
+        <input type="text" inputMode="numeric" value={priceDisplay} onChange={e => onPriceChange(e.target.value)} placeholder="예) 440,000"/>
+        {price && <p style={{ fontSize: 12, color: 'var(--muted)', marginTop: 4 }}>구매 시 {Number(price).toLocaleString()} 코인 차감</p>}
+      </div>
 
-          <div className="form-group">
-            <label>가격 (코인)</label>
-            <input type="number" value={price} onChange={e => setPrice(e.target.value)} min={1} />
-          </div>
-
-          <div style={{ display: 'flex', gap: '.5rem', marginTop: '1rem' }}>
-            <button className="btn" onClick={() => router.push(`/product/${id}`)} disabled={busy}>취소</button>
-            <button className="btn btn-primary" style={{ flex: 1 }} onClick={submit} disabled={busy}>
-              {busy ? '저장 중...' : '변경사항 저장'}
-            </button>
-          </div>
-        </div>
+      <div className="bj-form-actions">
+        <button className="bj-btn bj-btn-cancel" onClick={() => router.push(`/product/${id}`)} disabled={busy}>취소</button>
+        <button className="bj-btn bj-btn-primary bj-btn-grow" onClick={submit} disabled={busy}>
+          {busy ? '저장 중...' : '변경사항 저장'}
+        </button>
       </div>
     </main>
   );
