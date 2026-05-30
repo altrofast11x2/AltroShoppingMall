@@ -55,22 +55,14 @@ const MORE_ITEMS = [
   { label: '계정 전환',         href: '/login',         icon: <I.Swap width={18} height={18}/>, auth: true },
 ];
 
-// Altro 다른 앱 (altroboard 서비스들) — AltroBoard 바로가기는 제거
-const OTHER_APPS = [
-  { label: '게시판',       href: 'https://altroboard.vercel.app/board',     icon: <I.Board width={18} height={18}/> },
-  { label: '갤러리',       href: 'https://altroboard.vercel.app/galleries', icon: <I.Gallery width={18} height={18}/> },
-  { label: '쇼츠',         href: 'https://altroboard.vercel.app/shorts',    icon: <I.Shorts width={18} height={18}/> },
-  { label: '음악',         href: 'https://altroboard.vercel.app/music',     icon: <I.Music width={18} height={18}/> },
-  { label: '게임',         href: 'https://altroboard.vercel.app/games',     icon: <I.Games width={18} height={18}/> },
-  { label: '학습',         href: 'https://altroboard.vercel.app/study',     icon: <I.Study width={18} height={18}/> },
-  { label: '외부데이터',    href: 'https://altroboard.vercel.app/data',      icon: <I.Data width={18} height={18}/> },
-];
+// 게시판·갤러리·쇼츠·게임 등은 전부 AltroBoard 안의 기능이므로 개별 나열하지 않고
+// AltroBoard 하나만 노출 → 다른 앱(AltroShop)에서 AltroBoard로 이동
+const ALTROBOARD_URL = 'https://altroboard.vercel.app/';
 
 export default function NavBar() {
   const [user, setUser] = useState<any>(null);
   const [drawer, setDrawer] = useState(false);
   const [moreOpen, setMoreOpen] = useState(false);
-  const [appsOpen, setAppsOpen] = useState(false);
   const [search, setSearch] = useState('');
   const pathname = usePathname();
   const router = useRouter();
@@ -99,7 +91,7 @@ export default function NavBar() {
     };
   }, [pathname]);
 
-  useEffect(() => { setDrawer(false); setMoreOpen(false); setAppsOpen(false); }, [pathname]);
+  useEffect(() => { setDrawer(false); setMoreOpen(false); }, [pathname]);
 
   useEffect(() => {
     if (typeof document === 'undefined') return;
@@ -286,36 +278,17 @@ export default function NavBar() {
                           {item.label}
                         </Link>
                       ))}
-                    {user && (
-                      <button className="bj-drawer-item danger" onClick={logout}>
-                        <span className="bj-drawer-item-icon"><I.Logout width={18} height={18}/></span>
-                        로그아웃
-                      </button>
-                    )}
                   </div>
                 )}
               </div>
 
-              {/* Altro 다른 앱 */}
+              {/* Altro 다른 앱 — 게시판·갤러리·게임 등은 모두 AltroBoard 안에 있으므로 AltroBoard 하나로 */}
               <div className="bj-drawer-section">
-                <button className="bj-drawer-section-btn" onClick={() => setAppsOpen(o => !o)} aria-expanded={appsOpen}>
+                <a href={ALTROBOARD_URL} target="_blank" rel="noopener noreferrer" className="bj-drawer-section-btn">
                   <span className="bj-drawer-section-icon"><I.Apps width={20} height={20}/></span>
-                  <span>Altro 다른 앱</span>
-                  <span className={`bj-drawer-section-caret ${appsOpen ? 'open' : ''}`}>
-                    <I.Chevron width={14} height={14}/>
-                  </span>
-                </button>
-                {appsOpen && (
-                  <div className="bj-drawer-sublist">
-                    {OTHER_APPS.map(a => (
-                      <a key={a.label} href={a.href} target="_blank" rel="noopener noreferrer" className="bj-drawer-item">
-                        <span className="bj-drawer-item-icon">{a.icon}</span>
-                        {a.label}
-                        <span className="bj-drawer-item-ext"><I.Ext width={11} height={11}/></span>
-                      </a>
-                    ))}
-                  </div>
-                )}
+                  <span>AltroBoard 메인</span>
+                  <span className="bj-drawer-item-ext" style={{ marginLeft: 'auto' }}><I.Ext width={13} height={13}/></span>
+                </a>
               </div>
             </nav>
 
@@ -336,6 +309,10 @@ export default function NavBar() {
                   <span className="bj-drawer-section-icon"><I.Cart width={20} height={20}/></span>
                   <span>장바구니</span>
                 </Link>
+                <button onClick={logout} className="bj-drawer-section-btn bj-drawer-logout">
+                  <span className="bj-drawer-section-icon"><I.Logout width={20} height={20}/></span>
+                  <span>로그아웃</span>
+                </button>
               </div>
             )}
           </aside>

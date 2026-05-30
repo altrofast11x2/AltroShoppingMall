@@ -3,8 +3,8 @@ import { useEffect, useState, Suspense } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { listProducts, toggleLike } from '@/lib/shop';
-import { slugToLabel, CATEGORIES } from '@/lib/categories';
-import { getRecentSearches, removeRecentSearch, clearRecentSearches } from '@/lib/recent';
+import { slugToLabel } from '@/lib/categories';
+import { getRecentSearches, removeRecentSearch, clearRecentSearches, getRecentViews } from '@/lib/recent';
 
 export const dynamic = 'force-dynamic';
 
@@ -60,13 +60,14 @@ const SLIDES = [
   },
 ];
 
+// 홈 가운데 빠른 메뉴 — 찜한 상품(필수 첫번째) → 최근 본 상품 → 카테고리들 → 코인 충전
 const QUICK = [
-  { label: '찜한상품',  icon: <Ico.Heart width={26} height={26}/>,    href: '/?cat=liked', authRequired: true },
-  { label: '여성의류',  icon: <Ico.Women width={26} height={26}/>,    href: '/?cat=women' },
-  { label: '남성의류',  icon: <Ico.Star width={26} height={26}/>,     href: '/?cat=men' },
-  { label: '디지털',    icon: <Ico.Digital width={26} height={26}/>,  href: '/?cat=digital' },
-  { label: '스포츠',    icon: <Ico.Sports width={26} height={26}/>,   href: '/?cat=sports' },
-  { label: '코인충전',  icon: <Ico.Coin width={26} height={26}/>,     href: '/coin-request', authRequired: true },
+  { label: '찜한 상품',   icon: <Ico.Heart width={26} height={26}/>,    href: '/?cat=liked',    authRequired: true },
+  { label: '최근 본 상품', icon: <Ico.Clock width={26} height={26}/>,    href: '/?view=recent' },
+  { label: '디지털/가전',  icon: <Ico.Digital width={26} height={26}/>,  href: '/?cat=digital' },
+  { label: '스포츠/레저',  icon: <Ico.Sports width={26} height={26}/>,   href: '/?cat=sports' },
+  { label: '스타굿즈',    icon: <Ico.Star width={26} height={26}/>,     href: '/?cat=stargoods' },
+  { label: '코인 충전',   icon: <Ico.Coin width={26} height={26}/>,     href: '/coin-request',  authRequired: true },
 ];
 
 export default function HomePage() {
@@ -87,6 +88,7 @@ function Home() {
   const sp = useSearchParams();
   const q = sp.get('q') || '';
   const cat = sp.get('cat') || '';
+  const view = sp.get('view') || '';
 
   useEffect(() => {
     try {
@@ -129,11 +131,14 @@ function Home() {
     setProducts(list);
   };
 
-  // 필터링: 검색어(q) → 카테고리(cat) → 찜(cat=liked)
+  // 필터링: 검색어(q) → 최근 본 상품(view) → 찜(cat=liked) → 카테고리(cat)
   let filtered = products;
   if (q) {
     const lq = q.toLowerCase();
     filtered = filtered.filter(p => p.name?.toLowerCase().includes(lq) || p.desc?.toLowerCase().includes(lq));
+  } else if (view === 'recent') {
+    const ids = getRecentViews();
+    filtered = ids.map(id => products.find(p => p.id === id)).filter(Boolean);
   } else if (cat === 'liked') {
     filtered = user ? filtered.filter(p => p.likes && p.likes[user.id]) : [];
   } else if (cat) {
@@ -142,21 +147,25 @@ function Home() {
 
   const heading = q
     ? `"${q}" 검색 결과`
-    : cat === 'liked'
-      ? '찜한 상품'
-      : cat
-        ? `${slugToLabel(cat)}`
-        : '오늘의 추천 아이템';
+    : view === 'recent'
+      ? '최근 본 상품'
+      : cat === 'liked'
+        ? '찜한 상품'
+        : cat
+          ? `${slugToLabel(cat)}`
+          : '오늘의 추천 아이템';
 
   const emptyMsg = q
     ? `"${q}" 와 일치하는 상품이 없습니다.`
-    : cat === 'liked'
-      ? (user ? '아직 찜한 상품이 없습니다. 마음에 드는 상품에 하트를 눌러보세요.' : '로그인 후 찜한 상품을 볼 수 있습니다.')
-      : cat
-        ? `${slugToLabel(cat)} 카테고리에 등록된 상품이 없습니다.`
-        : '등록된 상품이 없습니다.';
+    : view === 'recent'
+      ? '최근 본 상품이 없습니다. 상품을 둘러보면 여기에 표시됩니다.'
+      : cat === 'liked'
+        ? (user ? '아직 찜한 상품이 없습니다. 마음에 드는 상품에 하트를 눌러보세요.' : '로그인 후 찜한 상품을 볼 수 있습니다.')
+        : cat
+          ? `${slugToLabel(cat)} 카테고리에 등록된 상품이 없습니다.`
+          : '등록된 상품이 없습니다.';
 
-  const showHome = !q && !cat;
+  const showHome = !q && !cat && !view;
   const fmt = (n: number) => Number(n).toLocaleString();
   const timeAgo = (iso: string) => {
     const diff = Date.now() - new Date(iso).getTime();
