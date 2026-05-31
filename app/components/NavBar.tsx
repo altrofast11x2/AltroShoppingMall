@@ -34,6 +34,7 @@ const I: any = {
   Shorts: (p: any) => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" {...p}><rect x="2" y="2" width="20" height="20" rx="3"/><polygon points="10 8 16 12 10 16 10 8" fill="currentColor"/></svg>,
   Music: (p: any) => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" {...p}><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>,
   Crown: (p: any) => <svg viewBox="0 0 24 24" fill="currentColor" {...p}><path d="M2 8l4 4 6-8 6 8 4-4-2 12H4z"/></svg>,
+  Todo: (p: any) => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" {...p}><polyline points="9 11 12 14 20 6"/><path d="M20 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h9"/></svg>,
   Cog: (p: any) => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" {...p}><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>,
 };
 
@@ -55,9 +56,11 @@ const MORE_ITEMS = [
   { label: '계정 전환',         href: '/login',         icon: <I.Swap width={18} height={18}/>, auth: true },
 ];
 
-// 게시판·갤러리·쇼츠·게임 등은 전부 AltroBoard 안의 기능이므로 개별 나열하지 않고
-// AltroBoard 하나만 노출 → 다른 앱(AltroShop)에서 AltroBoard로 이동
-const ALTROBOARD_URL = 'https://altroboard.vercel.app/';
+// Altro 독립 앱(서비스) 목록 — AltroBoard 내부 기능(게시판/게임 등)이 아니라 별도 앱만 노출
+const OTHER_APPS = [
+  { label: 'AltroBoard', href: 'https://altroboard.vercel.app/', icon: <I.Apps width={20} height={20}/> },
+  { label: 'AltroTodo',  href: 'https://altrotodo.vercel.app/',  icon: <I.Todo width={20} height={20}/> },
+];
 
 export default function NavBar() {
   const [user, setUser] = useState<any>(null);
@@ -282,13 +285,15 @@ export default function NavBar() {
                 )}
               </div>
 
-              {/* Altro 다른 앱 — 게시판·갤러리·게임 등은 모두 AltroBoard 안에 있으므로 AltroBoard 하나로 */}
+              {/* Altro 다른 앱 — 독립 앱만 (AltroBoard 내부 기능은 제외) */}
               <div className="bj-drawer-section">
-                <a href={ALTROBOARD_URL} target="_blank" rel="noopener noreferrer" className="bj-drawer-section-btn">
-                  <span className="bj-drawer-section-icon"><I.Apps width={20} height={20}/></span>
-                  <span>AltroBoard 메인</span>
-                  <span className="bj-drawer-item-ext" style={{ marginLeft: 'auto' }}><I.Ext width={13} height={13}/></span>
-                </a>
+                {OTHER_APPS.map(a => (
+                  <a key={a.label} href={a.href} target="_blank" rel="noopener noreferrer" className="bj-drawer-section-btn">
+                    <span className="bj-drawer-section-icon">{a.icon}</span>
+                    <span>{a.label}</span>
+                    <span className="bj-drawer-item-ext" style={{ marginLeft: 'auto' }}><I.Ext width={13} height={13}/></span>
+                  </a>
+                ))}
               </div>
             </nav>
 
